@@ -1,6 +1,6 @@
 package com.codeskraps.y2020.days
 
-import com.codeskraps.Main.DEBUG
+import com.codeskraps.y2020.Main.DEBUG
 
 class Day3 : Day() {
 

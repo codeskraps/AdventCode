@@ -1,6 +1,6 @@
 @file:Suppress("ConstantConditionIf")
 
-package com.codeskraps
+package com.codeskraps.y2020
 
 import com.codeskraps.y2020.days.*
 import java.util.*
