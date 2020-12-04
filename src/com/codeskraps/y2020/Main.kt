@@ -18,7 +18,7 @@ object Main {
         days.add(Day1())
         days.add(Day2())
         days.add(Day3())
-        //days.add(Day4())
+        days.add(Day4())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
