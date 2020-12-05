@@ -9,8 +9,8 @@ import java.util.function.Consumer
 object Main {
 
     // Settings
-    private const val RUN_ALL = true
-    const val DEBUG = false
+    private const val RUN_ALL = false
+    const val DEBUG = true
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -19,6 +19,7 @@ object Main {
         days.add(Day2())
         days.add(Day3())
         days.add(Day4())
+        days.add(Day5())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
