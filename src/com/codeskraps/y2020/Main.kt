@@ -15,6 +15,8 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
         val days = ArrayList<Day>()
+
+        /*-
         days.add(Day1())
         days.add(Day2())
         days.add(Day3())
@@ -23,7 +25,9 @@ object Main {
         days.add(Day6())
         days.add(Day7())
         days.add(Day8())
-        days.add(Day9())
+        days.add(Day9())*/
+
+        days.add(Day10())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
