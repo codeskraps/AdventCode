@@ -33,7 +33,7 @@ class Day10 : Day() {
     override fun partTwo(): String {
         val count = ArrayList<Long>(jolts.size)
 
-        fun find(i: Int, lower: Int): Long {
+        fun findCount(i: Int, lower: Int): Long {
             return when (lower) {
                 1, 2 -> if (jolts[i] - jolts[i - lower] < 4) count[i - lower] else 0L
                 3 -> if (i > 2 && jolts[i] - jolts[i - lower] < 4) count[i - lower] else 0L
@@ -44,7 +44,7 @@ class Day10 : Day() {
         for (i in jolts.indices) {
             when (i) {
                 0, 1 -> count.add(1)
-                else -> count.add(find(i, 1) + find(i, 2) + find(i, 3))
+                else -> count.add(findCount(i, 1) + findCount(i, 2) + findCount(i, 3))
             }
         }
 

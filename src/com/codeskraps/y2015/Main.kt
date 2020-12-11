@@ -1,8 +1,11 @@
 @file:Suppress("ConstantConditionIf")
 
-package com.codeskraps.y2020
+package com.codeskraps.y2015
 
-import com.codeskraps.y2020.days.*
+import com.codeskraps.y2015.days.Day
+import com.codeskraps.y2015.days.Day1
+import com.codeskraps.y2015.days.Day2
+import com.codeskraps.y2015.days.Day3
 import java.util.*
 import java.util.function.Consumer
 
@@ -16,19 +19,9 @@ object Main {
     fun main(args: Array<String>) {
         val days = ArrayList<Day>()
 
-        /*-
         days.add(Day1())
         days.add(Day2())
         days.add(Day3())
-        days.add(Day4())
-        days.add(Day5())
-        days.add(Day6())
-        days.add(Day7())
-        days.add(Day8())
-        days.add(Day9())*/
-
-        days.add(Day10())
-        days.add(Day11())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
