@@ -2,10 +2,7 @@
 
 package com.codeskraps.y2015
 
-import com.codeskraps.y2015.days.Day
-import com.codeskraps.y2015.days.Day1
-import com.codeskraps.y2015.days.Day2
-import com.codeskraps.y2015.days.Day3
+import com.codeskraps.y2015.days.*
 import java.util.*
 import java.util.function.Consumer
 
@@ -22,6 +19,7 @@ object Main {
         days.add(Day1())
         days.add(Day2())
         days.add(Day3())
+        days.add(Day4())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
