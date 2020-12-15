@@ -31,6 +31,7 @@ object Main {
         days.add(Day11())
         days.add(Day12())
         days.add(Day13())
+        days.add(Day14())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
