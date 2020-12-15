@@ -21,17 +21,20 @@ object Main {
         days.add(Day2())
         days.add(Day3())
         days.add(Day4())
-        days.add(Day5())
+        days.add(Day5())*/
+
+        /*-
         days.add(Day6())
         days.add(Day7())
         days.add(Day8())
-        days.add(Day9())*/
+        days.add(Day9())
+        days.add(Day10())*/
 
-        days.add(Day10())
         days.add(Day11())
         days.add(Day12())
         days.add(Day13())
         days.add(Day14())
+        days.add(Day15())
 
         if (RUN_ALL) {
             days.forEach(Consumer { obj: Day -> obj.run() })
