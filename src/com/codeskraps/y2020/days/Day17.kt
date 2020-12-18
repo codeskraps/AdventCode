@@ -1,234 +1,101 @@
 package com.codeskraps.y2020.days
 
+typealias Coordinate = List<Int>
+typealias Grid = HashSet<Coordinate>
+
 class Day17 : Day() {
     override val day: String
         get() = "Seventeen"
 
-    var input = INPUT1
-    var cube = arrayOf<Array<Array<Char>>>()
-    var hcube = arrayOf<Array<Array<Array<Char>>>>()
-    private val width = input.size + (CYCLES * 2)
-    private val middle = (width / 2) - (input.size / 2)
-
-    init {
-        // Initialize cube
-        for (i in 0 until width) {
-            var floor = arrayOf<Array<Char>>()
-            for (j in 0 until width) {
-                var row = arrayOf<Char>()
-                for (k in 0 until width) {
-                    row += INACTIVE
+    private fun convert(dimensions: Int): Grid =
+            INPUT.mapIndexed { y, line ->
+                line.mapIndexedNotNull { x, char ->
+                    if (char == '#') {
+                        List(dimensions) { i ->
+                            when (i) {
+                                0 -> x
+                                1 -> y
+                                else -> 0
+                            }
+                        }
+                    } else {
+                        null
+                    }
                 }
-                floor += row
-            }
-            cube += floor
-        }
-        for (h in 0 until width) {
-            hcube += cube
-        }
-
-
-        // fill cube
-        for (x in input.indices) {
-            for (y in input.indices) {
-                cube[middle][middle + y][middle + x] = input[y][x]
-                hcube[middle][middle][middle + y][middle + x] = input[y][x]
-            }
-        }
-    }
+            }.flatten().toHashSet()
 
     override fun partOne(): String {
-        var active = 0
+        var grid = convert(3)
 
-        for (i in 0 until CYCLES) {
-            active = cycle(cube)
+        repeat(6) {
+            grid = tick(grid)
         }
 
-        return active.toString()
-    }
-
-    private fun neighbours(cube: Array<Array<Array<Char>>>, z: Int, y: Int, x: Int): Int {
-        var active = 0
-        val dx = arrayOf(-1, 0, 1, -1, 0, 1, -1, 0, 1)
-        val dy = arrayOf(-1, -1, -1, 0, 0, 0, 1, 1, 1)
-
-        for (dz in -1..2) {
-            for (i in 0..8) {
-                val yy = y + dy[i]
-                val xx = x + dx[i]
-                val zz = z + dz
-
-                try {
-                    if (cube[zz][yy][xx] == ACTIVE) {
-                        active += 1
-                    }
-                } catch (e: Exception) {
-                    // ignore
-                }
-            }
-        }
-
-        return active
-    }
-
-    private fun hneighbours(hcube: Array<Array<Array<Array<Char>>>>, w: Int, z: Int, y: Int, x: Int): Int {
-        var active = 0
-        val dx = arrayOf(-1, 0, 1, -1, 0, 1, -1, 0, 1)
-        val dy = arrayOf(-1, -1, -1, 0, 0, 0, 1, 1, 1)
-
-        for (dw in -1..2) {
-            for (dz in -1..2) {
-                for (i in 0..8) {
-                    val yy = y + dy[i]
-                    val xx = x + dx[i]
-                    val zz = z + dz
-                    val ww = w + dw
-
-                    try {
-                        if (hcube[ww][zz][yy][xx] == ACTIVE) {
-                            active += 1
-                        }
-                    } catch (e: Exception) {
-                        // Ignore
-                    }
-                }
-            }
-        }
-
-        return active
-    }
-
-    private fun cycle(cube: Array<Array<Array<Char>>>): Int {
-        var change = arrayOf<Array<Array<Int>>>()
-        // Initialize change
-        for (i in 0 until width) {
-            var floor = arrayOf<Array<Int>>()
-            for (j in 0 until width) {
-                var row = arrayOf<Int>()
-                for (k in 0 until width) {
-                    row += 0
-                }
-                floor += row
-            }
-            change += floor
-        }
-
-        for (z in 0 until width) {
-            for (y in 0 until width) {
-                for (x in 0 until width) {
-                    if (cube[z][y][x] == INACTIVE && neighbours(cube, z, y, x) == 3)
-                        change[z][y][x] = 1
-                    else if (cube[z][y][x] == ACTIVE && neighbours(cube, z, y, x) !in 2..3)
-                        change[z][y][x] = -1
-                }
-            }
-        }
-
-        var active = 0
-
-        for (z in 0 until width) {
-            for (y in 0 until width) {
-                for (x in 0 until width) {
-                    if (change[z][y][x] == 1) cube[z][y][x] = ACTIVE
-                    else if (change[z][y][x] == -1) cube[z][y][x] = INACTIVE
-
-                    if (cube[z][y][x] == ACTIVE) active += 1
-                }
-            }
-        }
-
-        //printCube(cube)
-
-        return active
-    }
-
-    private fun hcycle(hcube: Array<Array<Array<Array<Char>>>>): Int {
-        var hchange = arrayOf<Array<Array<Array<Int>>>>()
-        // Initialize change
-        for (z in 0 until width) {
-            var hyper = arrayOf<Array<Array<Int>>>()
-            for (i in 0 until width) {
-                var floor = arrayOf<Array<Int>>()
-                for (j in 0 until width) {
-                    var row = arrayOf<Int>()
-                    for (k in 0 until width) {
-                        row += 0
-                    }
-                    floor += row
-                }
-                hyper += floor
-            }
-            hchange += hyper
-        }
-
-        for (w in 0 until width) {
-            for (z in 0 until width) {
-                for (y in 0 until width) {
-                    for (x in 0 until width) {
-                        if (hcube[w][z][y][x] == INACTIVE && hneighbours(hcube, w, z, y, x) == 3) {
-                            hchange[w][z][y][x] = 1
-                        } else if (hcube[w][z][y][x] == ACTIVE && hneighbours(hcube, w, z, y, x) !in 2..3) {
-                            hchange[w][z][y][x] = -1
-                        }
-                    }
-                }
-            }
-        }
-
-        var active = 0
-
-        for (w in 0 until width) {
-            for (z in 0 until width) {
-                for (y in 0 until width) {
-                    for (x in 0 until width) {
-                        if (hchange[w][z][y][x] == 1) hcube[w][z][y][x] = ACTIVE
-                        else if (hchange[w][z][y][x] == -1) hcube[w][z][y][x] = INACTIVE
-
-                        if (hcube[w][z][y][x] == ACTIVE) active += 1
-                    }
-                }
-            }
-        }
-
-        return active
-    }
-
-    private fun printCube(cube: Array<Array<Array<Char>>>) {
-        var f = 1
-
-        for (floor in cube) {
-            print("Floor: $f")
-            println()
-            f += 1
-            for (row in floor) {
-                for (column in row) {
-                    print("$column ")
-                }
-                println()
-            }
-            println("-----------------")
-        }
+        return grid.size.toString()
     }
 
     override fun partTwo(): String {
-        var active = 0
+        var grid = convert(4)
 
-        for (i in 0 until CYCLES) {
-            active = hcycle(hcube)
+        repeat(6) {
+            grid = tick(grid)
         }
 
-        return active.toString()
+        return grid.size.toString()
+    }
+
+    private fun tick(grid: Grid): Grid {
+        val neighbourInfo = HashMap<Coordinate, Pair<Boolean, Int>>()
+
+        for (cell in grid) {
+            for (neighbour in getAllAdjacent(cell)) {
+                neighbourInfo[neighbour] = if (neighbourInfo.containsKey(neighbour)) {
+                    val old = neighbourInfo[neighbour]!!
+
+                    if (cell == neighbour) {
+                        Pair(true, old.second)
+                    } else {
+                        Pair(old.first, old.second + 1)
+                    }
+                } else {
+                    if (cell == neighbour) {
+                        Pair(true, 0)
+                    } else {
+                        Pair(false, 1)
+                    }
+                }
+            }
+        }
+
+        return neighbourInfo.filterValues { (active, neighbourCount) ->
+            if (active) {
+                neighbourCount in 2..3
+            } else {
+                neighbourCount == 3
+            }
+        }.keys.toHashSet()
+    }
+
+    private fun getAllAdjacent(cell: Coordinate): Sequence<Coordinate> = sequence {
+        fun getAllAdjacentRecur(cell: Coordinate, depth: Int): Sequence<Coordinate> = sequence {
+            if (depth < 0) {
+                yield(cell)
+            } else {
+                val minus = cell.toMutableList()
+                minus[depth] = minus[depth] - 1
+                val plus = cell.toMutableList()
+                plus[depth] = plus[depth] + 1
+
+                yieldAll(getAllAdjacentRecur(minus, depth - 1))
+                yieldAll(getAllAdjacentRecur(cell, depth - 1))
+                yieldAll(getAllAdjacentRecur(plus, depth - 1))
+            }
+        }
+
+        yieldAll(getAllAdjacentRecur(cell, cell.size - 1))
     }
 
     companion object {
-        private const val ACTIVE = '#'
-        private const val INACTIVE = '.'
-        private const val CYCLES = 6
-        private val INPUT1 = arrayOf(
-                ".#.",
-                "..#",
-                "###"
-        )
         private val INPUT = arrayOf(
                 "#....#.#",
                 "..##.##.",

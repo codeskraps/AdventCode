@@ -69,7 +69,7 @@ class Day18 : Day() {
         var sum = 0L
 
         INPUT.forEach {
-            sum += doEquationPartTwo(it).trim().toLong()
+            sum += doEquationPartTwo(it).toLong()
         }
 
         return sum.toString()
@@ -94,15 +94,16 @@ class Day18 : Day() {
     }
 
     private fun doBracket(equation: String): String {
-        return if (equation.contains('(')) {
+        var newEquation = equation
+
+        if (equation.contains('(')) {
             val index = equation.indexOf('(')
             val endBracket = index + endOfBracket(equation.substring(index, equation.length))
             val value = doBracket(equation.substring(index + 1, endBracket - 1))
-            doEquationPartTwo(equation.replaceRange(index, endBracket, value))
-
-        } else {
-            doEquationPartTwo(equation)
+            newEquation = equation.replaceRange(index, endBracket, value)
         }
+
+        return doEquationPartTwo(newEquation)
     }
 
     private fun doOperation(op: Char, equation: String): String {
@@ -116,11 +117,7 @@ class Day18 : Day() {
         while (end < equation.length && NUM.contains(equation[end])) end++
         val num2 = equation.substring(index + 2, end).trim().toLong()
 
-        val value = when (op) {
-            '+' -> num1 + num2
-            '*' -> num1 * num2
-            else -> 0
-        }
+        val value = doOperation(op, num1, num2)
 
         return equation.replaceRange(start, end, value.toString())
     }
