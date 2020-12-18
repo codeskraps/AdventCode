@@ -1,196 +1,77 @@
 package com.codeskraps.y2020.days
 
-import kotlin.collections.ArrayList
-import java.util.Arrays
-
-
 class Day16 : Day() {
     override val day: String
         get() = "Sixteen"
 
-    private val notes = ArrayList<Note>()
-
-    init {
-        INPUT0.forEach { s ->
-            val a = s.split(":")
-            val b = a[1].split("or")
-            val c = b[0].split("-")
-            val d = b[1].split("-")
-
-            notes.add(Note(a[0].trim(), IntRange(c[0].trim().toInt(), c[1].trim().toInt()), IntRange(d[0].trim().toInt(), d[1].trim().toInt())))
-        }
-    }
+    private val ticketRules: Map<String, List<IntRange>> = parseTicketRules()
+    private val allRuleRanges: List<IntRange> = ticketRules.values.flatten()
+    private val ourTicket: Array<Int> = INPUT1
+    private val nearbyTickets: Array<Array<Int>> = INPUT2
 
     override fun partOne(): String {
-        val tickets = ArrayList<Array<Int>>()
-        var error = 0
-
-        for (r in INPUT2.indices) {
-            for (c in INPUT2[r].indices) {
-                var valid = false
-                var index = 0
-
-                while (index < notes.size && !valid) {
-                    valid = notes[index].valid(INPUT2[r][c])
-                    index++
-                }
-
-                if (!valid) error += INPUT2[r][c]
-                else tickets.add(INPUT2[r])
-            }
-        }
-
-        debugPrintf("Valid Tickets: %d\n", tickets.size)
-        return error.toString()
+        return nearbyTickets.sumBy { ticket ->
+            ticket.filter { field ->
+                allRuleRanges.none { rule -> field in rule }
+            }.sum()
+        }.toString()
     }
 
     override fun partTwo(): String {
-        val tickets = validTickets()
+        val validTickets = nearbyTickets.filter { it.isValidTicket() }
 
-        val possibleMatches = Array(INPUT1.size) { BooleanArray(notes.size) }
-        for (possibleMatch in possibleMatches) Arrays.fill(possibleMatch, true)
+        val possibleFieldRules: Map<String, MutableSet<Int>> = ticketRules.keys.map { rule ->
+            rule to ourTicket.indices.filter { column ->
+                validTickets.columnPassesRule(column, rule)
+            }.toMutableSet()
+        }.toMap()
 
-        printMatches(possibleMatches)
-        debugPrintf("Initial\n")
+        val foundRules = reduceRules(possibleFieldRules)
 
-        for (ticket in tickets) {
-            for (j in ticket.indices) {
-                for (k in notes.indices) {
-                    if (!notes[k].valid(ticket[j])) {
-                        possibleMatches[j][k] = false
+        return foundRules.entries
+                .filter { it.key.startsWith("departure") }
+                .map { ourTicket[it.value].toLong() }
+                .reduce { a, b -> a * b }.toString()
+    }
+
+    private fun reduceRules(possibleRules: Map<String, MutableSet<Int>>): Map<String, Int> {
+        val foundRules = mutableMapOf<String, Int>()
+        while (foundRules.size < possibleRules.size) {
+            possibleRules.entries
+                    .filter { (_, possibleValues) -> possibleValues.size == 1 }
+                    .forEach { (rule, possibleValues) ->
+                        val columnNumber = possibleValues.first()
+                        foundRules[rule] = columnNumber
+                        possibleRules.values.forEach { it.remove(columnNumber) }
                     }
-                }
-            }
         }
-
-        printMatches(possibleMatches)
-        debugPrintf("After\n")
-
-        while (!isDone(possibleMatches))
-            step(possibleMatches)
-
-        printMatches(possibleMatches)
-
-        var answer: Long = 1
-        for (j in 0..5) {
-            for (k in possibleMatches.indices) {
-                if (possibleMatches[k][j]) {
-                    answer *= INPUT1[k].toLong()
-                    break
-                }
-            }
-        }
-
-        return answer.toString()
+        return foundRules
     }
 
-    private fun printMatches(possibleMatches: Array<BooleanArray>) {
-        for (i in possibleMatches.indices) {
-            var p = ""
-            for (j in possibleMatches[i].indices) {
-                p += " " + if (possibleMatches[i][j]) 1 else 0
+    private fun List<Array<Int>>.columnPassesRule(column: Int, fieldName: String): Boolean =
+            this.all { ticket ->
+                ticketRules.getValue(fieldName).any { rule -> ticket[column] in rule }
             }
-            debugPrintf("%s\n", p)
-        }
-    }
 
-    private fun step(possibleMatches: Array<BooleanArray>) {
-        for (j in possibleMatches.indices) {
-            var count = 0
-            var index = -1
-            for (k in possibleMatches.indices) {
-                if (possibleMatches[j][k]) {
-                    count++
-                    index = k
+    private fun Array<Int>.isValidTicket(): Boolean =
+            this.all { field ->
+                allRuleRanges.any { rule ->
+                    field in rule
                 }
             }
-            if (count == 1) {
-                for (i in possibleMatches.indices) {
-                    if (i != j) {
-                        possibleMatches[i][index] = false
-                    }
-                }
-            }
-        }
-        for (j in possibleMatches.indices) {
-            var count = 0
-            var index = -1
-            for (k in possibleMatches.indices) {
-                if (possibleMatches[k][j]) {
-                    count++
-                    index = k
-                }
-            }
-            if (count == 1) {
-                for (i in possibleMatches.indices) {
-                    if (i != j) {
-                        possibleMatches[index][i] = false
-                    }
-                }
-            }
-        }
-    }
 
+    private fun parseTicketRules(): Map<String, List<IntRange>> =
+            INPUT0.takeWhile { it.isNotEmpty() }.map { line ->
+                val (name, start1, end1, start2, end2) = ticketRuleRegex.matchEntire(line)!!.destructured
+                name to listOf(
+                        start1.toInt()..end1.toInt(),
+                        start2.toInt()..end2.toInt()
+                )
+            }.toMap()
 
-    private fun isDone(possibleMatches: Array<BooleanArray>): Boolean {
-        var done = true
-        for (possibleMatch in possibleMatches) {
-            var count = 0
-            for (b in possibleMatch) {
-                if (b) {
-                    count++
-                }
-            }
-            if (count > 1) {
-                done = false
-                break
-            }
-        }
-        return done
-    }
-
-
-    private fun validTickets(): ArrayList<Array<Int>> {
-        val tickets = ArrayList<Array<Int>>()
-        for (r in INPUT2.indices) {
-            for (c in INPUT2[r].indices) {
-                var valid = true
-                var index = 0
-
-                while (index < notes.size && valid) {
-                    valid = notes[index].valid(INPUT2[r][c])
-                    index++
-                }
-
-                if (valid) tickets.add(INPUT2[r])
-
-                    /*-
-                    var valid = false
-                var index = 0
-
-                while (index < notes.size && !valid) {
-                    valid = notes[index].valid(INPUT2[r][c])
-                    index++
-                }
-
-                if (valid) tickets.add(INPUT2[r])*/
-            }
-        }
-
-        debugPrintf("Valid tickets: %d\n", tickets.size)
-
-        return tickets
-    }
-
-    class Note(val rule: String, private val rangeA: IntRange, val rangeB: IntRange) {
-        fun valid(value: Int): Boolean {
-            if (rangeA.contains(value)) return true
-            if (rangeB.contains(value)) return true
-            return false
-        }
-    }
 
     companion object {
+        private val ticketRuleRegex = """^([a-z ]+): (\d+)-(\d+) or (\d+)-(\d+)$""".toRegex()
         private val INPUT0 = arrayOf(
                 "departure location: 41-526 or 547-973",
                 "departure station: 29-874 or 891-961",

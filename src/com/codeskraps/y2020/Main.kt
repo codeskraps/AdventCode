@@ -38,7 +38,7 @@ object Main {
         days.add(Day15())*/
 
         days.add(Day16())
-        days.add(Day17())
+        //days.add(Day17())
         //days.add(Day18())
 
         if (RUN_ALL) {
